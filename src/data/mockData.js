@@ -1,15 +1,15 @@
 export const initialUserData = {
   id: 'usr_101',
-  name: 'Aarav Sharma',
-  email: 'aarav.sharma@example.com',
-  mobile: '+91 98765 43210',
+  name: 'User',
+  email: '',
+  mobile: '',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   monthlyIncome: 75000,
   currency: 'INR (₹)',
   riskPreference: 'Moderate',
-  joinedDate: '2025-01-15',
-  occupation: 'Senior Software Engineer',
-  location: 'Bangalore, India'
+  joinedDate: '2026-01-15',
+  occupation: '',
+  location: ''
 }
 
 export const initialExpenses = [

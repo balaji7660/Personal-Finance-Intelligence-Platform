@@ -1,28 +1,63 @@
 import apiClient from './api'
-import { initialUserData } from '../data/mockData'
+
+// Helper to format clean display name from email or identifier
+const formatNameFromIdentifier = (identifier) => {
+  if (!identifier) return 'User'
+  const username = identifier.split('@')[0]
+  // capitalize first letter and clean up numbers/dots
+  const clean = username.replace(/[._-]+/g, ' ')
+  return clean.charAt(0).toUpperCase() + clean.slice(1)
+}
 
 export const authService = {
   login: async (credentials) => {
     try {
       const res = await apiClient.post('/auth/login', credentials)
       if (res.data && res.data.data) {
+        const userData = res.data.data.user
+        // Save profile in user map for offline persistence
+        const profiles = JSON.parse(localStorage.getItem('finsight_saved_profiles') || '{}')
+        if (userData.email) {
+          profiles[userData.email.toLowerCase()] = userData
+          localStorage.setItem('finsight_saved_profiles', JSON.stringify(profiles))
+        }
         return {
           token: res.data.data.token,
-          user: res.data.data.user
+          user: userData
         }
       }
     } catch (err) {
-      // If network fails (e.g. cloud sleeping, offline, or demo mode), provide fallback login
+      // Fallback for offline/cold-start: retrieve saved profile or generate from entered credentials
       if (err.code === 'ERR_NETWORK' || !err.response || err.message?.includes('timeout') || err.message?.includes('Network Error')) {
-        console.warn('Backend unavailable, falling back to local session.')
-        const fallbackUser = {
-          ...initialUserData,
-          email: credentials.username_or_email || credentials.email || initialUserData.email,
-          fullName: initialUserData.fullName || 'Demo User',
+        console.warn('Backend unavailable, restoring or creating user session.')
+        const emailOrUser = (credentials.username_or_email || credentials.email || '').toLowerCase()
+        const profiles = JSON.parse(localStorage.getItem('finsight_saved_profiles') || '{}')
+        const existingProfile = profiles[emailOrUser] || JSON.parse(localStorage.getItem('finsight_user') || 'null')
+
+        let user
+        if (existingProfile && (existingProfile.email?.toLowerCase() === emailOrUser || !emailOrUser)) {
+          user = existingProfile
+        } else {
+          user = {
+            id: Date.now(),
+            fullName: formatNameFromIdentifier(emailOrUser),
+            email: emailOrUser || 'user@example.com',
+            mobile: '',
+            monthlyIncome: 75000,
+            currency: 'INR (₹)',
+            riskPreference: 'Moderate',
+            occupation: '',
+            location: '',
+            avatar: null,
+            createdAt: new Date().toISOString()
+          }
+          profiles[emailOrUser] = user
+          localStorage.setItem('finsight_saved_profiles', JSON.stringify(profiles))
         }
+
         return {
           token: 'demo-local-jwt-token-' + Date.now(),
-          user: fallbackUser
+          user
         }
       }
 
@@ -43,24 +78,37 @@ export const authService = {
     try {
       const res = await apiClient.post('/auth/register', userData)
       if (res.data && res.data.data) {
+        const user = res.data.data.user
+        const profiles = JSON.parse(localStorage.getItem('finsight_saved_profiles') || '{}')
+        if (user.email) {
+          profiles[user.email.toLowerCase()] = user
+          localStorage.setItem('finsight_saved_profiles', JSON.stringify(profiles))
+        }
         return {
           token: res.data.data.token,
-          user: res.data.data.user
+          user
         }
       }
     } catch (err) {
       if (err.code === 'ERR_NETWORK' || !err.response || err.message?.includes('timeout')) {
-        console.warn('Backend unavailable during registration, creating local session.')
+        console.warn('Backend unavailable during registration, saving local profile.')
         const fallbackUser = {
           id: Date.now(),
-          fullName: userData.full_name || userData.fullName || 'New User',
-          email: userData.email,
+          fullName: userData.full_name || userData.fullName || formatNameFromIdentifier(userData.email),
+          email: (userData.email || '').toLowerCase(),
           mobile: userData.mobile || '',
           monthlyIncome: Number(userData.monthly_income || 75000),
           currency: userData.currency || 'INR (₹)',
           riskPreference: userData.risk_preference || 'Moderate',
-          avatar: null
+          occupation: '',
+          location: '',
+          avatar: null,
+          createdAt: new Date().toISOString()
         }
+        const profiles = JSON.parse(localStorage.getItem('finsight_saved_profiles') || '{}')
+        profiles[fallbackUser.email] = fallbackUser
+        localStorage.setItem('finsight_saved_profiles', JSON.stringify(profiles))
+
         return {
           token: 'demo-local-jwt-token-' + Date.now(),
           user: fallbackUser
