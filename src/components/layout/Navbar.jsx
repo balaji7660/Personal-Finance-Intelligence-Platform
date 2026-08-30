@@ -118,7 +118,7 @@ export const Navbar = ({ onToggleMobileMenu }) => {
           </button>
 
           {showUserDropdown && (
-            <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl border border-slate-200/80 dark:border-slate-800/80 py-1.5 z-50 animate-fade-in">
+            <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800 py-1.5 z-50 animate-fade-in ring-1 ring-black/5">
               <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
                 <p className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">{user?.fullName || user?.name}</p>
                 <p className="text-xs text-slate-400 truncate">{user?.email}</p>
