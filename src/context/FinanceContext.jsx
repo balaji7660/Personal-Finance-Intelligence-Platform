@@ -4,10 +4,12 @@ import { budgetService } from '../services/budgetService'
 import { investmentService } from '../services/investmentService'
 import { goalService } from '../services/goalService'
 import { notificationService } from '../services/notificationService'
+import { useAuth } from '../hooks/useAuth'
 
 const FinanceContext = createContext(null)
 
 export const FinanceProvider = ({ children }) => {
+  const { user, isAuthenticated } = useAuth()
   const [expenses, setExpenses] = useState([])
   const [budgets, setBudgets] = useState([])
   const [investments, setInvestments] = useState([])
@@ -47,8 +49,10 @@ export const FinanceProvider = ({ children }) => {
   }, [showToast])
 
   useEffect(() => {
-    refreshData()
-  }, [refreshData])
+    if (isAuthenticated) {
+      refreshData()
+    }
+  }, [isAuthenticated, refreshData])
 
   // Expense Actions
   const addExpense = async (expenseData) => {
@@ -159,15 +163,33 @@ export const FinanceProvider = ({ children }) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id))
   }
 
+  // Auth destructured at the top of the provider
+
   // Computed Financial Totals
-  const totalIncome = 75000 // default monthly income
+  const totalIncome = user?.monthlyIncome ? Number(user.monthlyIncome) : 75000 // dynamic user monthly income
   const totalExpenses = expenses.reduce((acc, curr) => acc + Number(curr.amount || 0), 0)
   const totalSavings = Math.max(0, totalIncome - totalExpenses)
-  const totalInvested = investments.reduce((acc, curr) => acc + Number(curr.investedAmount || 0), 0)
-  const currentInvestmentValue = investments.reduce((acc, curr) => acc + Number(curr.currentValue || 0), 0)
   const totalBudgetLimit = budgets.reduce((acc, curr) => acc + Number(curr.limit || 0), 0)
   const totalBudgetSpent = budgets.reduce((acc, curr) => acc + Number(curr.spent || 0), 0)
   const budgetUtilization = totalBudgetLimit > 0 ? Math.round((totalBudgetSpent / totalBudgetLimit) * 100) : 0
+
+  // Compute live health score
+  const hasExpenses = expenses.length > 0
+  const savingsRate = totalIncome > 0 ? (totalSavings / totalIncome) * 100 : 0
+  const savingsScore = hasExpenses ? Math.min(100, Math.round((savingsRate / 20) * 80)) : null
+  const budgetsWithinLimit = budgets.filter(b => Number(b.spent || 0) <= Number(b.limit || 0)).length
+  const budgetHealthScore = hasExpenses && budgets.length > 0
+    ? Math.round((budgetsWithinLimit / budgets.length) * 100)
+    : null
+  const totalInvested = investments.reduce((acc, curr) => acc + Number(curr.investedAmount || 0), 0)
+  const currentInvestmentValue = investments.reduce((acc, curr) => acc + Number(curr.currentValue || 0), 0)
+  const gainPct = totalInvested > 0 ? ((currentInvestmentValue - totalInvested) / totalInvested) * 100 : 0
+  const investScore = investments.length > 0 ? Math.min(100, Math.round(50 + gainPct * 2)) : null
+  const debtScore = 70
+  const activePillars = [savingsScore, budgetHealthScore, investScore, debtScore].filter(s => s !== null)
+  const healthScore = activePillars.length > 1
+    ? Math.round(activePillars.reduce((a, b) => a + b, 0) / activePillars.length)
+    : 0
 
   return (
     <FinanceContext.Provider
@@ -207,7 +229,7 @@ export const FinanceProvider = ({ children }) => {
           totalBudgetLimit,
           totalBudgetSpent,
           budgetUtilization,
-          healthScore: 78,
+          healthScore,
         }
       }}
     >

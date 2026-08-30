@@ -1,51 +1,36 @@
 import apiClient from './api'
 import { initialUserData } from '../data/mockData'
 
-const STORAGE_KEY = 'finsight_user'
-
-const getStoredUser = () => {
-  const data = localStorage.getItem(STORAGE_KEY)
-  if (data) {
-    try {
-      return JSON.parse(data)
-    } catch {
-      return initialUserData
-    }
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(initialUserData))
-  return initialUserData
-}
-
-const saveStoredUser = (user) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-}
-
 export const userService = {
   getProfile: async () => {
-    // Backend: const res = await apiClient.get('/users/profile'); return res.data;
-    return getStoredUser()
+    try {
+      const res = await apiClient.get('/users/profile')
+      if (res.data && res.data.data) {
+        return res.data.data
+      }
+    } catch (err) {
+      console.warn('Backend API unavailable, returning cached profile:', err.message)
+    }
+    const saved = localStorage.getItem('finsight_user')
+    return saved ? JSON.parse(saved) : initialUserData
   },
 
   updateProfile: async (updatedData) => {
-    // Backend: const res = await apiClient.put('/users/profile', updatedData); return res.data;
-    const current = getStoredUser()
-    const updated = { ...current, ...updatedData }
-    saveStoredUser(updated)
-    return updated
-  },
-
-  updatePreferences: async (preferences) => {
-    // Backend: const res = await apiClient.put('/users/preferences', preferences); return res.data;
-    const current = getStoredUser()
-    const updated = { ...current, preferences: { ...(current.preferences || {}), ...preferences } }
-    saveStoredUser(updated)
-    return updated
-  },
-
-  changePassword: async (passwords) => {
-    // Backend: const res = await apiClient.post('/users/change-password', passwords); return res.data;
-    return { success: true, message: 'Password updated successfully' }
-  },
+    try {
+      const res = await apiClient.put('/users/profile', updatedData)
+      if (res.data && res.data.data) {
+        localStorage.setItem('finsight_user', JSON.stringify(res.data.data))
+        return res.data.data
+      }
+    } catch (err) {
+      console.warn('Backend API unavailable, updating profile locally:', err.message)
+    }
+    const current = localStorage.getItem('finsight_user')
+    const user = current ? JSON.parse(current) : initialUserData
+    const newProfile = { ...user, ...updatedData }
+    localStorage.setItem('finsight_user', JSON.stringify(newProfile))
+    return newProfile
+  }
 }
 
 export default userService

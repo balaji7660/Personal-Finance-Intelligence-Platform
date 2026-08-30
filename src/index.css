@@ -16,7 +16,52 @@
   }
 
   body {
-    @apply antialiased selection:bg-brand-500 selection:text-white;
+    @apply antialiased selection:bg-brand-500 selection:text-white bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism Cards */
+  .glass-card {
+    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-glass-sm hover:shadow-glass-lg transition-all duration-300;
+  }
+
+  .glass-card-interactive {
+    @apply glass-card hover:-translate-y-1 hover:border-brand-500/40 dark:hover:border-brand-400/40 hover:shadow-glow-primary;
+  }
+
+  .glass-panel {
+    @apply bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/60;
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-600 dark:from-brand-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent;
+  }
+
+  .gradient-text-emerald {
+    @apply bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent;
+  }
+
+  .gradient-text-rose {
+    @apply bg-gradient-to-r from-rose-500 to-amber-500 bg-clip-text text-transparent;
+  }
+
+  /* Glowing Button & Cards */
+  .btn-gradient {
+    @apply bg-gradient-to-r from-brand-600 via-brand-500 to-indigo-600 text-white shadow-md hover:shadow-glow-primary hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 font-semibold;
+  }
+
+  /* Subtle Ambient Mesh Pattern */
+  .bg-radial-ambient {
+    background-image: radial-gradient(circle at 50% 0%, rgba(43, 138, 255, 0.08) 0%, transparent 60%),
+                      radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+  }
+
+  .dark .bg-radial-ambient {
+    background-image: radial-gradient(circle at 50% 0%, rgba(43, 138, 255, 0.15) 0%, transparent 70%),
+                      radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
   }
 }
 

@@ -19,7 +19,7 @@ export const EditGoal = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
-    const found = goals.find((g) => g.id === id)
+    const found = goals.find((g) => String(g.id) === String(id))
     if (found) {
       setFormData(found)
     }

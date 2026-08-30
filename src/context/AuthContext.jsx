@@ -1,9 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { authService } from '../services/authService'
 import { userService } from '../services/userService'
-import { initialUserData } from '../data/mockData'
 
 const AuthContext = createContext(null)
+
+export const clearFinancialStorage = () => {
+  localStorage.removeItem('finsight_expenses')
+  localStorage.removeItem('finsight_budgets')
+  localStorage.removeItem('finsight_investments')
+  localStorage.removeItem('finsight_goals')
+  localStorage.removeItem('finsight_notifications')
+}
+
+// One-time purge: clears any stale mock data from older app versions
+const STORAGE_VERSION = 'v2'
+if (localStorage.getItem('finsight_storage_version') !== STORAGE_VERSION) {
+  clearFinancialStorage()
+  localStorage.setItem('finsight_storage_version', STORAGE_VERSION)
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -19,19 +33,14 @@ export const AuthProvider = ({ children }) => {
           setUser(JSON.parse(savedUser))
           setToken(savedToken)
         } catch {
-          setUser(initialUserData)
-          setToken(savedToken)
+          setUser(null)
+          setToken(null)
+          localStorage.removeItem('finsight_token')
+          localStorage.removeItem('finsight_user')
         }
       } else {
-        // Provide default guest session if token exists or start unauthenticated
-        const demoAuth = localStorage.getItem('finsight_demo_autologin')
-        if (demoAuth !== 'false') {
-          // Pre-populate with initial user for immediate seamless demonstration
-          setUser(initialUserData)
-          setToken('mock_demo_token')
-          localStorage.setItem('finsight_token', 'mock_demo_token')
-          localStorage.setItem('finsight_user', JSON.stringify(initialUserData))
-        }
+        setUser(null)
+        setToken(null)
       }
       setLoading(false)
     }
@@ -42,6 +51,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     setLoading(true)
     try {
+      clearFinancialStorage()
       const response = await authService.login(credentials)
       setUser(response.user)
       setToken(response.token)
@@ -56,11 +66,8 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     setLoading(true)
     try {
+      clearFinancialStorage()
       const response = await authService.register(userData)
-      setUser(response.user)
-      setToken(response.token)
-      localStorage.setItem('finsight_token', response.token)
-      localStorage.setItem('finsight_user', JSON.stringify(response.user))
       return response
     } finally {
       setLoading(false)
@@ -69,11 +76,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     await authService.logout()
+    clearFinancialStorage()
     setUser(null)
     setToken(null)
     localStorage.removeItem('finsight_token')
     localStorage.removeItem('finsight_user')
-    localStorage.setItem('finsight_demo_autologin', 'false')
   }
 
   const updateProfile = async (updatedData) => {

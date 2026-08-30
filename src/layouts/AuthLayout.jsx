@@ -11,7 +11,7 @@ export const AuthLayout = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-between">
       {/* Top Header */}
       <div className="flex items-center justify-between p-6 max-w-7xl w-full mx-auto">
-        <Link to="/login" className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity" title="Go to Landing Page">
           <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 font-black text-lg">
             <Sparkles className="w-5 h-5" />
           </div>

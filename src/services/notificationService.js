@@ -1,5 +1,4 @@
 import apiClient from './api'
-import { initialNotifications } from '../data/mockData'
 
 const STORAGE_KEY = 'finsight_notifications'
 
@@ -9,59 +8,83 @@ const getStoredNotifications = () => {
     try {
       return JSON.parse(data)
     } catch {
-      return initialNotifications
+      return []
     }
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(initialNotifications))
-  return initialNotifications
+  return []
 }
 
-const saveStoredNotifications = (notifications) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications))
+const saveStoredNotifications = (list) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
 }
 
 export const notificationService = {
   getNotifications: async () => {
-    // Backend: const res = await apiClient.get('/notifications'); return res.data;
+    try {
+      const res = await apiClient.get('/notifications')
+      if (res.data && res.data.data) {
+        saveStoredNotifications(res.data.data)
+        return res.data.data
+      }
+    } catch (err) {
+      console.warn('Backend API unavailable, using local notifications:', err.message)
+    }
     return getStoredNotifications()
   },
 
   markAsRead: async (id) => {
-    // Backend: const res = await apiClient.patch(`/notifications/${id}/read`); return res.data;
-    const notifications = getStoredNotifications()
-    const updated = notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    saveStoredNotifications(updated)
-    return updated
+    try {
+      const res = await apiClient.put(`/notifications/${id}/read`)
+      if (res.data && res.data.data) {
+        const list = getStoredNotifications()
+        const index = list.findIndex((n) => String(n.id) === String(id))
+        if (index !== -1) {
+          list[index].read = true
+          saveStoredNotifications(list)
+        }
+        return list
+      }
+    } catch (err) {
+      console.warn('Backend API unavailable, marking as read locally:', err.message)
+    }
+
+    const list = getStoredNotifications()
+    const index = list.findIndex((n) => String(n.id) === String(id))
+    if (index !== -1) {
+      list[index].read = true
+      saveStoredNotifications(list)
+    }
+    return list
   },
 
   markAllAsRead: async () => {
-    // Backend: const res = await apiClient.patch('/notifications/mark-all-read'); return res.data;
-    const notifications = getStoredNotifications()
-    const updated = notifications.map((n) => ({ ...n, read: true }))
-    saveStoredNotifications(updated)
-    return updated
+    try {
+      const res = await apiClient.put('/notifications/read-all')
+      if (res.data && res.data.data) {
+        saveStoredNotifications(res.data.data)
+        return res.data.data
+      }
+    } catch (err) {
+      console.warn('Backend API unavailable, marking all read locally:', err.message)
+    }
+
+    const list = getStoredNotifications().map((n) => ({ ...n, read: true }))
+    saveStoredNotifications(list)
+    return list
   },
 
   deleteNotification: async (id) => {
-    // Backend: const res = await apiClient.delete(`/notifications/${id}`); return res.data;
-    const notifications = getStoredNotifications()
-    const filtered = notifications.filter((n) => n.id !== id)
+    try {
+      await apiClient.delete(`/notifications/${id}`)
+    } catch (err) {
+      console.warn('Backend API unavailable, deleting notification locally:', err.message)
+    }
+
+    const list = getStoredNotifications()
+    const filtered = list.filter((n) => String(n.id) !== String(id))
     saveStoredNotifications(filtered)
     return { success: true, id }
   },
-
-  addNotification: async (notifData) => {
-    const notifications = getStoredNotifications()
-    const newNotif = {
-      ...notifData,
-      id: 'notif_' + Date.now(),
-      timestamp: new Date().toISOString(),
-      read: false,
-    }
-    const updated = [newNotif, ...notifications]
-    saveStoredNotifications(updated)
-    return newNotif
-  }
 }
 
 export default notificationService

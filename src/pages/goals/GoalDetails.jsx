@@ -33,7 +33,7 @@ export const GoalDetails = () => {
   const [contributionAmount, setContributionAmount] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-  const goal = goals.find((g) => g.id === id)
+  const goal = goals.find((g) => String(g.id) === String(id))
 
   if (!goal) {
     return (

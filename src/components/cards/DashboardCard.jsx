@@ -10,7 +10,7 @@ export const DashboardCard = ({
 }) => {
   return (
     <div
-      className={`rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-card hover:shadow-card-hover transition-all duration-200 flex flex-col ${className}`}
+      className={`glass-card rounded-2xl transition-all duration-300 flex flex-col hover:border-slate-300 dark:hover:border-slate-700/80 ${className}`}
     >
       {(title || action) && (
         <div
@@ -18,12 +18,12 @@ export const DashboardCard = ({
         >
           <div>
             {title && (
-              <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
                 {title}
               </h2>
             )}
             {subtitle && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
                 {subtitle}
               </p>
             )}

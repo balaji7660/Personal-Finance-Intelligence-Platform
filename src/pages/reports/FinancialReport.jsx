@@ -73,7 +73,7 @@ export const FinancialReport = () => {
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">FinSight Statement of Accounts</h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Account Holder: <strong>{user?.name || 'Aarav Sharma'}</strong> • {user?.email}
+              Account Holder: <strong>{user?.fullName || user?.name || 'User'}</strong> • {user?.email}
             </p>
             <p className="text-xs text-slate-400">Statement Date: {formatDate(new Date().toISOString())}</p>
           </div>

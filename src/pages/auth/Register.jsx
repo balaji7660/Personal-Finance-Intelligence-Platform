@@ -38,6 +38,12 @@ export const Register = () => {
       return
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email.trim())) {
+      setError('Please enter a valid email address (e.g. user@example.com).')
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match.')
       return
@@ -51,7 +57,12 @@ export const Register = () => {
     setLoading(true)
     try {
       await register(formData)
-      navigate('/dashboard')
+      navigate('/login', {
+        state: {
+          successMessage: 'Account created successfully! Please sign in with your credentials.',
+          registeredEmail: formData.email,
+        },
+      })
     } catch (err) {
       setError(err.message || 'Registration failed.')
     } finally {
@@ -60,16 +71,19 @@ export const Register = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl">
+    <div className="glass-card p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-glass-lg relative overflow-hidden animate-fade-in">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Create FinSight Account</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Start tracking, budgeting and growing your wealth
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          Create Your <span className="gradient-text">FinSight</span> Account
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+          Start tracking, budgeting and growing your wealth intelligently
         </p>
       </div>
 
       {error && (
-        <div className="mb-5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-600 dark:text-rose-400 font-medium">
+        <div className="mb-5 p-3.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-600 dark:text-rose-400 font-medium shadow-sm">
           {error}
         </div>
       )}
@@ -146,20 +160,20 @@ export const Register = () => {
         </div>
 
         <div className="pt-2">
-          <label className="flex items-start gap-2.5 cursor-pointer">
+          <label className="flex items-start gap-2.5 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={formData.agreeTerms}
               onChange={(e) => handleChange('agreeTerms', e.target.checked)}
               className="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-800"
             />
-            <span className="text-xs text-slate-600 dark:text-slate-400">
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
               I agree to the{' '}
-              <a href="#terms" className="text-brand-600 dark:text-brand-400 hover:underline">
+              <a href="#terms" className="font-bold text-brand-600 dark:text-brand-400 hover:underline">
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="#privacy" className="text-brand-600 dark:text-brand-400 hover:underline">
+              <a href="#privacy" className="font-bold text-brand-600 dark:text-brand-400 hover:underline">
                 Privacy Policy
               </a>
             </span>
@@ -171,7 +185,7 @@ export const Register = () => {
           variant="primary"
           size="lg"
           loading={loading}
-          className="w-full mt-3"
+          className="w-full mt-3 btn-gradient"
           icon={ArrowRight}
           iconPosition="right"
         >
@@ -179,9 +193,9 @@ export const Register = () => {
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+      <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
         Already have an account?{' '}
-        <Link to="/login" className="font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+        <Link to="/login" className="font-bold text-brand-600 dark:text-brand-400 hover:underline">
           Sign In
         </Link>
       </div>

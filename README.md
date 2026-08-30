@@ -1,267 +1,136 @@
-# FinSight - Modern Personal Finance Management & Intelligence Dashboard
+# FinSight — Personal Finance Management & Intelligence System
 
-FinSight is a production-grade personal finance management and wealth intelligence web application built with **React**, **Vite**, **Tailwind CSS**, **Recharts**, **Lucide Icons**, and **Context API**.
-
-Designed specifically with modern fintech design principles and tailored for the Indian financial ecosystem with native Indian Rupee (`₹`) support.
+FinSight is a production-ready, full-stack Personal Finance Management & Financial Intelligence SaaS application built using **React, Vite, Tailwind CSS, Recharts, Python 3, FastAPI, SQLAlchemy, JWT Authentication, and SQLite / MySQL**.
 
 ---
 
-## 🌟 Key Features
+## 🌟 Architecture Overview
 
-1. **Executive Financial Dashboard**
-   - 6 Key Performance Metric cards (Income, Expenses, Net Savings, Investments, Budget Utilization, Financial Health Score 78/100).
-   - Recharts visual analytics: Monthly Cash Flow (Income vs Expense vs Savings), Expense Trends, Category Pie/Donut Breakdown, Portfolio Alpha vs Nifty 50.
-   - Quick action triggers: Add Expense, Create Budget, Add Investment, Create Goal.
-   - Recent verified transactions audit feed.
-
-2. **Full Expense Management**
-   - Itemized expense tracking with merchant descriptions, notes, and payment channels (UPI, Credit Card, Debit Card, Net Banking).
-   - Categorized under: Food, Travel, Shopping, Bills, Education, Healthcare, Entertainment, Other.
-   - Real-time search, category filtering, sort by date/amount, and CSV export.
-   - Add, Edit, and Delete operations with confirmation dialogs.
-
-3. **Smart Budget Management**
-   - Category budget caps with real-time utilization progress bars.
-   - Automatic visual warning banners when spending exceeds **80%** threshold or exceeds budget.
-   - Detailed category drill-down pages with historical expenditure listings.
-
-4. **Investment Portfolio Tracker**
-   - Multi-asset tracking across Mutual Funds, Direct Equities (Stocks), ETFs (Gold BeES), Government Bonds (RBI Floating Rate), and Sovereign Gold Bonds (SGB).
-   - Real-time Profit/Loss and CAGR/Absolute return calculations.
-   - Asset allocation analysis and diversification rebalancing suggestions.
-
-5. **Financial Goals & Life Milestones**
-   - Milestone tracking for Emergency Funds, Vacations, Vehicle downpayments, and Retirement corpuses.
-   - Dynamic monthly required savings calculator with target date forecasting.
-   - Goal deposit/contribution tracker.
-
-6. **Analytics & AI Financial Intelligence**
-   - Spending behavior diagnostics detecting anomalies and month-on-month category inflation.
-   - 50/30/20 budget rule alignment analysis.
-   - Portfolio alpha trajectory vs benchmark index.
-   - 100-Point Financial Health Score breakdown across Savings, Budgeting, Investments, and Debt.
-
-7. **Downloadable & Printable Audit Reports**
-   - Master Financial Balance Sheet, Expense Audit, Investment Portfolio Statement, and Goal Reports.
-   - Instant CSV export and print-ready PDF styling.
-
-8. **Notification Center**
-   - Interactive notification drawer and dedicated notification manager.
-   - Mark as read, mark all as read, delete, and alert category filters.
-
-9. **Profile & Security Center**
-   - Identity details, monthly income, default currency, and risk tolerance profile.
-   - Two-Factor Authentication (2FA) toggle, password change, and active session manager.
-   - Light & Dark mode support with persistence.
-
----
-
-## 🚀 Tech Stack
-
-- **Frontend Core**: React 18, Vite
-- **Styling**: Tailwind CSS, PostCSS, Autoprefixer
-- **Navigation & Routing**: React Router DOM (v6) with Protected Routes
-- **Charts & Data Visualization**: Recharts
-- **Iconography**: Lucide React
-- **HTTP Client**: Axios (with centralized `api.js` client and interceptors)
-- **State Management**: React Context API (`AuthContext`, `FinanceContext`, `ThemeContext`)
-- **Currency & Formatting**: Indian Numbering Format (`Intl.NumberFormat('en-IN')` with ₹)
-
----
-
-## 📂 File & Directory Structure
-
-```
-c:\Users\BALAJI\OneDrive\Desktop\Hanif project\
-├── public/
-│   └── favicon.svg
+```text
+FinSight
+│
 ├── src/
-│   ├── assets/
-│   ├── components/
-│   │   ├── cards/
-│   │   │   ├── BudgetCard.jsx
-│   │   │   ├── DashboardCard.jsx
-│   │   │   ├── GoalCard.jsx
-│   │   │   ├── InvestmentCard.jsx
-│   │   │   └── StatCard.jsx
-│   │   ├── charts/
-│   │   │   ├── AssetAllocationChart.jsx
-│   │   │   ├── CategoryPieChart.jsx
-│   │   │   ├── ExpenseTrendChart.jsx
-│   │   │   ├── HealthScoreGauge.jsx
-│   │   │   ├── IncomeExpenseChart.jsx
-│   │   │   └── InvestmentPerformanceChart.jsx
-│   │   ├── common/
-│   │   │   ├── Button.jsx
-│   │   │   ├── ConfirmDialog.jsx
-│   │   │   ├── DataTable.jsx
-│   │   │   ├── EmptyState.jsx
-│   │   │   ├── FilterBar.jsx
-│   │   │   ├── Input.jsx
-│   │   │   ├── LoadingSpinner.jsx
-│   │   │   ├── Modal.jsx
-│   │   │   ├── PageHeader.jsx
-│   │   │   ├── ProgressBar.jsx
-│   │   │   ├── SearchBar.jsx
-│   │   │   ├── Select.jsx
-│   │   │   └── Toast.jsx
-│   │   ├── layout/
-│   │   │   ├── DashboardLayout.jsx
-│   │   │   ├── MobileSidebar.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── NotificationPanel.jsx
-│   │   │   └── Sidebar.jsx
-│   │   └── tables/
-│   │       ├── ExpenseTable.jsx
-│   │       ├── PortfolioTable.jsx
-│   │       └── RecentTransactionsTable.jsx
-│   ├── context/
-│   │   ├── AuthContext.jsx
-│   │   ├── FinanceContext.jsx
-│   │   └── ThemeContext.jsx
-│   ├── data/
-│   │   └── mockData.js
-│   ├── hooks/
-│   │   ├── useAuth.js
-│   │   ├── useFinance.js
-│   │   └── useTheme.js
-│   ├── layouts/
-│   │   ├── AuthLayout.jsx
-│   │   └── MainLayout.jsx
-│   ├── pages/
-│   │   ├── analytics/
-│   │   │   ├── Analytics.jsx
-│   │   │   ├── BudgetRecommendations.jsx
-│   │   │   ├── FinancialHealth.jsx
-│   │   │   ├── InvestmentInsights.jsx
-│   │   │   └── SpendingAnalysis.jsx
-│   │   ├── auth/
-│   │   │   ├── ForgotPassword.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   ├── ResetPassword.jsx
-│   │   │   └── VerifyOTP.jsx
-│   │   ├── budgets/
-│   │   │   ├── BudgetDetails.jsx
-│   │   │   ├── Budgets.jsx
-│   │   │   ├── CreateBudget.jsx
-│   │   │   └── EditBudget.jsx
-│   │   ├── dashboard/
-│   │   │   └── Dashboard.jsx
-│   │   ├── expenses/
-│   │   │   ├── AddExpense.jsx
-│   │   │   ├── EditExpense.jsx
-│   │   │   ├── ExpenseHistory.jsx
-│   │   │   └── Expenses.jsx
-│   │   ├── goals/
-│   │   │   ├── CreateGoal.jsx
-│   │   │   ├── EditGoal.jsx
-│   │   │   ├── GoalDetails.jsx
-│   │   │   └── Goals.jsx
-│   │   ├── investments/
-│   │   │   ├── AddInvestment.jsx
-│   │   │   ├── AssetAllocation.jsx
-│   │   │   ├── InvestmentDetails.jsx
-│   │   │   ├── Investments.jsx
-│   │   │   └── Portfolio.jsx
-│   │   ├── notifications/
-│   │   │   └── Notifications.jsx
-│   │   ├── profile/
-│   │   │   ├── Preferences.jsx
-│   │   │   ├── Profile.jsx
-│   │   │   └── Security.jsx
-│   │   └── NotFound.jsx
-│   ├── routes/
-│   │   ├── AppRoutes.jsx
-│   │   └── ProtectedRoute.jsx
-│   ├── services/
-│   │   ├── api.js
-│   │   ├── authService.js
-│   │   ├── budgetService.js
-│   │   ├── expenseService.js
-│   │   ├── goalService.js
-│   │   ├── investmentService.js
-│   │   ├── notificationService.js
-│   │   ├── reportService.js
-│   │   └── userService.js
-│   ├── utils/
-│   │   ├── currencyFormatter.js
-│   │   ├── dateUtils.js
-│   │   └── exportUtils.js
-│   ├── App.jsx
-│   ├── index.css
-│   └── main.jsx
-├── .env
-├── .env.example
-├── .gitignore
-├── index.html
-├── package.json
-├── postcss.config.js
-├── tailwind.config.js
-├── vite.config.js
+│   ├── React 18 + Vite 6
+│   ├── Components (Cards, Charts, Tables, Common UI)
+│   ├── Pages (Auth, Dashboard, Expenses, Budgets, Investments, Goals, Analytics, Reports, Notifications, Profile)
+│   ├── Context (AuthContext, FinanceContext, ThemeContext)
+│   ├── Services (Axios HTTP client connected to REST APIs)
+│   └── Routing (React Router DOM v6 with Protected Routes)
+│
+├── backend/
+│   ├── Python 3.13 + FastAPI + Uvicorn
+│   ├── app/routers/ (REST endpoints for Auth, User, Expenses, Budgets, Investments, Goals, Analytics, Reports, Notifications)
+│   ├── app/services/ (Business logic, financial calculations, recommendation engine)
+│   ├── app/models/ (SQLAlchemy ORM models)
+│   ├── app/schemas/ (Pydantic DTOs & Validation)
+│   ├── app/core/ (Database connection pool & JWT Security)
+│   └── run.py (FastAPI entrypoint)
+│
+├── database/
+│   └── db.sql (Database schema & definitions)
+│
 └── README.md
 ```
 
 ---
 
-## 🛠️ Installation & Running Locally
+## 🛠️ Technology Stack
 
-### Prerequisites
-- Node.js (v18 or newer recommended)
-- npm or yarn
+### Frontend
+- **Framework**: React 18.3 & Vite 6.1
+- **Styling**: Tailwind CSS v3 with dark mode (`class`), custom glassmorphism, and semantic financial tokens
+- **Data Visualization**: Recharts (`recharts`)
+- **Icons**: Lucide React (`lucide-react`)
+- **HTTP Client**: Axios (`axios`) with JWT Bearer Interceptors
+- **Routing**: React Router DOM (`react-router-dom` v6)
 
-### 1. Install Dependencies
+### Backend
+- **Framework**: Python 3 & FastAPI
+- **Server**: Uvicorn (`uvicorn`)
+- **Security**: PyJWT (`python-jose`) & `bcrypt` password hashing
+- **Data Access**: SQLAlchemy 2.0 ORM
+- **Validation**: Pydantic v2 schemas (`pydantic`)
+
+### Database
+- **Engine**: SQLite / MySQL Server
+- **Database File**: `backend/finsight.db` (Auto-fallback to SQLite when MySQL is offline)
+
+---
+
+## 🔑 Core Features & REST API Endpoints
+
+### 1. Authentication & Security (`/api/auth`)
+- `POST /api/auth/register` — User registration with currency, monthly income, risk preference.
+- `POST /api/auth/login` — Authenticate credentials and issue JWT bearer token.
+- `POST /api/auth/forgot-password` — Issue OTP verification code.
+- `POST /api/auth/verify-otp` — Verify OTP token.
+- `POST /api/auth/reset-password` — Reset account password.
+
+### 2. User Profile (`/api/users`)
+- `GET /api/users/profile` — Fetch current user details.
+- `PUT /api/users/profile` — Update monthly income, preferred currency, or risk profile.
+
+### 3. Expense Management (`/api/expenses`)
+- `GET /api/expenses` — List user's expenses.
+- `GET /api/expenses/{id}` — Fetch specific expense detail.
+- `POST /api/expenses` — Create new expense.
+- `PUT /api/expenses/{id}` — Update expense record.
+- `DELETE /api/expenses/{id}` — Delete expense record.
+
+### 4. Budget Management (`/api/budgets`)
+- `GET /api/budgets` — List category budget limits and spent totals.
+- `POST /api/budgets` — Create new budget guardrail.
+- `PUT /api/budgets/{id}` — Modify budget limit.
+- `DELETE /api/budgets/{id}` — Delete budget ceiling.
+
+### 5. Investment Portfolio (`/api/investments`)
+- `GET /api/investments` — Retrieve active holdings across Stocks, Mutual Funds, ETFs, Bonds, and Gold.
+- `POST /api/investments` — Add new investment holding.
+- `PUT /api/investments/{id}` — Update valuation or quantity.
+- `DELETE /api/investments/{id}` — Sell/remove asset position.
+
+### 6. Financial Goals (`/api/goals`)
+- `GET /api/goals` — Track Emergency Fund, House, Car, Travel, and Retirement targets.
+- `POST /api/goals` — Set new financial goal milestone.
+- `PUT /api/goals/{id}` — Log saved contributions.
+- `DELETE /api/goals/{id}` — Remove goal.
+
+### 7. Analytics & Intelligence (`/api/analytics`)
+- `GET /api/analytics` — Computes 6-month monthly cashflow comparison, category distribution, asset allocation breakdown, dynamic AI recommendations, and Financial Health Score (0–100).
+
+### 8. Financial Reports (`/api/reports`)
+- `GET /api/reports/financial` — Consolidated net worth and asset breakdown report.
+
+### 9. Notifications (`/api/notifications`)
+- `GET /api/notifications` — Fetch user alerts and reminders.
+- `PUT /api/notifications/{id}/read` — Mark notification read.
+- `PUT /api/notifications/read-all` — Mark all notifications read.
+- `DELETE /api/notifications/{id}` — Delete notification.
+
+---
+
+## ⚡ How to Run the Application
+
+### 1. Start Python FastAPI Backend Server
+Navigate to the `backend/` directory and run:
 ```bash
-npm install
+cd backend
+python run.py
 ```
+The backend server will start on `http://localhost:8000`.
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-Default configuration:
-```env
-VITE_API_BASE_URL=https://api.finsight.app/v1
-VITE_APP_NAME=FinSight
-VITE_DEFAULT_CURRENCY=INR
-```
-
-### 3. Start Development Server
+### 2. Start React Frontend Dev Server
+In another terminal, run:
 ```bash
 npm run dev
 ```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+The frontend application will start on `http://localhost:5173/`.
 
-### 4. Build for Production
+---
+
+## 🧪 Production Verification
+
+### Frontend Production Build
 ```bash
-npm run build
+cmd /c npm run build
 ```
-
----
-
-## 🔗 Backend API Integration Layer
-
-All API communications are centralized under `src/services/`. When connecting to a real backend, you only need to adjust the service functions (or uncomment the `apiClient` requests):
-
-| Service | Endpoint | HTTP Method | Description |
-|---|---|---|---|
-| `authService.js` | `/auth/login` | `POST` | Authenticate user |
-| `authService.js` | `/auth/register` | `POST` | Register new user |
-| `authService.js` | `/auth/forgot-password` | `POST` | Dispatch OTP |
-| `authService.js` | `/auth/reset-password` | `POST` | Reset user password |
-| `expenseService.js` | `/expenses` | `GET`, `POST` | Fetch or create expenses |
-| `expenseService.js` | `/expenses/:id` | `PUT`, `DELETE` | Update or delete expense |
-| `budgetService.js` | `/budgets` | `GET`, `POST` | Fetch or create category budgets |
-| `budgetService.js` | `/budgets/:id` | `PUT`, `DELETE` | Update or delete budget |
-| `investmentService.js`| `/investments` | `GET`, `POST` | Fetch or create portfolio holdings |
-| `goalService.js` | `/goals` | `GET`, `POST` | Fetch or update financial goals |
-| `notificationService.js`| `/notifications` | `GET`, `PATCH` | Notification center |
-| `userService.js` | `/users/profile` | `GET`, `PUT` | User profile & preferences |
-
----
-
-## 💡 Demo Credentials (Pre-loaded)
-- **Email**: `aarav.sharma@example.com`
-- **Password**: `password123`
-- **Verification OTP**: `123456`

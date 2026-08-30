@@ -29,14 +29,14 @@ export const Profile = () => {
 
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
-    name: user?.name || 'Aarav Sharma',
-    email: user?.email || 'aarav.sharma@example.com',
-    mobile: user?.mobile || '+91 98765 43210',
-    monthlyIncome: user?.monthlyIncome || 75000,
+    fullName: user?.fullName || user?.name || '',
+    email: user?.email || '',
+    mobile: user?.mobile || '',
+    monthlyIncome: user?.monthlyIncome || '',
     currency: user?.currency || 'INR (₹)',
     riskPreference: user?.riskPreference || 'Moderate',
-    occupation: user?.occupation || 'Senior Software Engineer',
-    location: user?.location || 'Bangalore, India',
+    occupation: user?.occupation || '',
+    location: user?.location || '',
   })
 
   const [savedSuccess, setSavedSuccess] = useState(false)
@@ -129,10 +129,12 @@ export const Profile = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                {user?.name || 'Aarav Sharma'}
+                {user?.fullName || user?.name || 'Your Name'}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {formData.occupation} • {formData.location}
+                {formData.occupation
+                  ? `${formData.occupation}${formData.location ? ` • ${formData.location}` : ''}`
+                  : formData.location || 'Update your profile to add details'}
               </p>
             </div>
             <span className="inline-flex items-center self-center sm:self-start px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
@@ -157,7 +159,11 @@ export const Profile = () => {
             </div>
             <div>
               <span className="text-slate-400">Joined</span>
-              <p className="font-bold text-slate-900 dark:text-white mt-0.5">Jan 2025</p>
+              <p className="font-bold text-slate-900 dark:text-white mt-0.5">
+                {user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                  : '—'}
+              </p>
             </div>
           </div>
         </div>
@@ -169,8 +175,8 @@ export const Profile = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Full Name"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              value={formData.fullName}
+              onChange={(e) => handleChange('fullName', e.target.value)}
               disabled={!isEditing}
               icon={User}
               required

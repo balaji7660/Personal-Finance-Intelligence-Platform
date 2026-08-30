@@ -25,7 +25,7 @@ export const BudgetDetails = () => {
   const { budgets, expenses } = useFinance()
   const navigate = useNavigate()
 
-  const budget = budgets.find((b) => b.id === id)
+  const budget = budgets.find((b) => String(b.id) === String(id))
 
   if (!budget) {
     return (

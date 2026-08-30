@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useFinance } from '../../hooks/useFinance'
 import { formatCurrency, formatPercentage } from '../../utils/currencyFormatter'
+import { analyticsService } from '../../services/analyticsService'
 import PageHeader from '../../components/common/PageHeader'
 import StatCard from '../../components/cards/StatCard'
 import DashboardCard from '../../components/cards/DashboardCard'
@@ -22,6 +23,28 @@ import Button from '../../components/common/Button'
 export const InvestmentInsights = () => {
   const { investments } = useFinance()
   const navigate = useNavigate()
+  const [investmentData, setInvestmentData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchInvestments = async () => {
+      setLoading(true)
+      const data = await analyticsService.getInvestmentAnalytics()
+      if (data) {
+        setInvestmentData(data)
+      }
+      setLoading(false)
+    }
+    fetchInvestments()
+  }, [])
+
+  if (loading || !investmentData) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -51,29 +74,29 @@ export const InvestmentInsights = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Best Performer"
-          value="Parag Parikh Flexi"
-          subtitle="+29.0% (₹14,500 gain)"
+          value={investmentData.bestPerformerName}
+          subtitle={`${investmentData.bestPerformerReturnPct} (${investmentData.bestPerformerGain})`}
           icon={TrendingUp}
           colorScheme="emerald"
         />
         <StatCard
           title="Worst Performer"
-          value="RBI Savings Bonds"
-          subtitle="+8.0% (Defensive bond)"
+          value={investmentData.worstPerformerName}
+          subtitle={`${investmentData.worstPerformerReturnPct} (${investmentData.worstPerformerGain})`}
           icon={TrendingDown}
           colorScheme="amber"
         />
         <StatCard
           title="Diversification Index"
-          value="8.2 / 10"
-          subtitle="Well balanced across 5 types"
+          value={`${(investmentData.diversificationScore || 0).toFixed(1)} / 10`}
+          subtitle={investmentData.diversificationSubtitle}
           icon={ShieldCheck}
           colorScheme="brand"
         />
         <StatCard
           title="Portfolio Volatility (Beta)"
-          value="0.88"
-          subtitle="Lower risk than broader Nifty"
+          value={(investmentData.portfolioBeta || 0).toFixed(2)}
+          subtitle={investmentData.portfolioBetaSubtitle}
           icon={Zap}
           colorScheme="violet"
         />
@@ -89,11 +112,10 @@ export const InvestmentInsights = () => {
             Diagnostic Alert
           </span>
           <h3 className="text-lg font-bold mt-0.5">
-            "Your portfolio is heavily concentrated in domestic equities (62%)."
+            "{investmentData.diagnosticAlert?.title}"
           </h3>
           <p className="text-xs text-slate-300 mt-1.5 leading-relaxed max-w-3xl">
-            While equity allocation delivers superior long-term wealth compounding, market drawdowns could increase short-term volatility.
-            We recommend directing future monthly SIP inflows into Sovereign Gold Bonds (SGB) or short-term liquid debt instruments.
+            {investmentData.diagnosticAlert?.message}
           </p>
         </div>
       </div>
@@ -137,30 +159,38 @@ export const InvestmentInsights = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {investments.map((inv) => {
-                const ret = inv.currentValue - inv.investedAmount
-                const pct = inv.investedAmount > 0 ? (ret / inv.investedAmount) * 100 : 0
-                return (
-                  <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
-                      {inv.name}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500">{inv.type}</td>
-                    <td className="px-4 py-3 text-right">{formatCurrency(inv.investedAmount)}</td>
-                    <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
-                      {formatCurrency(inv.currentValue)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatPercentage(pct)}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                        Optimal Holding
-                      </span>
-                    </td>
-                  </tr>
-                )
-              })}
+              {investments.length > 0 ? (
+                investments.map((inv) => {
+                  const ret = inv.currentValue - inv.investedAmount
+                  const pct = inv.investedAmount > 0 ? (ret / inv.investedAmount) * 100 : 0
+                  return (
+                    <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                      <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
+                        {inv.name}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500">{inv.type}</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(inv.investedAmount)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
+                        {formatCurrency(inv.currentValue)}
+                      </td>
+                      <td className={`px-4 py-3 text-right font-bold ${ret >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                        {ret >= 0 ? "+" : ""}{formatPercentage(pct)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold ${pct >= 15 ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300" : (pct >= 0 ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300" : "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300")}`}>
+                          {pct >= 15 ? "High Yield" : (pct >= 0 ? "Stable Holding" : "Underperforming")}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                    No holdings in portfolio. Add investments to begin tracking performance.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
