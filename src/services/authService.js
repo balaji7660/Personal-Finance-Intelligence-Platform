@@ -4,23 +4,37 @@ import apiClient from './api'
 const formatNameFromIdentifier = (identifier) => {
   if (!identifier) return 'User'
   const username = identifier.split('@')[0]
-  // capitalize first letter and clean up numbers/dots
-  const clean = username.replace(/[._-]+/g, ' ')
+  // capitalize cleanly (e.g. balajit7660 -> Balajit7660, john.doe -> John Doe)
+  const clean = username.replace(/[._-]+/g, ' ').trim()
+  if (!clean) return 'User'
   return clean.charAt(0).toUpperCase() + clean.slice(1)
 }
 
 export const authService = {
   login: async (credentials) => {
+    // Standardize credentials object
+    const identifier = (
+      credentials.identifier ||
+      credentials.username_or_email ||
+      credentials.email ||
+      credentials.username ||
+      ''
+    ).trim()
+    const password = credentials.password || ''
+
     try {
-      const res = await apiClient.post('/auth/login', credentials)
+      const res = await apiClient.post('/auth/login', { identifier, password })
       if (res.data && res.data.data) {
         const userData = res.data.data.user
         // Save profile in user map for offline persistence
         const profiles = JSON.parse(localStorage.getItem('finsight_saved_profiles') || '{}')
         if (userData.email) {
           profiles[userData.email.toLowerCase()] = userData
-          localStorage.setItem('finsight_saved_profiles', JSON.stringify(profiles))
         }
+        if (identifier) {
+          profiles[identifier.toLowerCase()] = userData
+        }
+        localStorage.setItem('finsight_saved_profiles', JSON.stringify(profiles))
         return {
           token: res.data.data.token,
           user: userData
@@ -29,20 +43,22 @@ export const authService = {
     } catch (err) {
       // Fallback for offline/cold-start: retrieve saved profile or generate from entered credentials
       if (err.code === 'ERR_NETWORK' || !err.response || err.message?.includes('timeout') || err.message?.includes('Network Error')) {
-        console.warn('Backend unavailable, restoring or creating user session.')
-        const emailOrUser = (credentials.username_or_email || credentials.email || '').toLowerCase()
+        console.warn('Backend unavailable, restoring or creating user session for:', identifier)
+        const emailOrUser = identifier.toLowerCase()
         const profiles = JSON.parse(localStorage.getItem('finsight_saved_profiles') || '{}')
         const existingProfile = profiles[emailOrUser] || JSON.parse(localStorage.getItem('finsight_user') || 'null')
 
         let user
-        if (existingProfile && (existingProfile.email?.toLowerCase() === emailOrUser || !emailOrUser)) {
-          user = existingProfile
+        if (existingProfile && (existingProfile.email?.toLowerCase() === emailOrUser || existingProfile.username?.toLowerCase() === emailOrUser || !emailOrUser)) {
+          user = { ...existingProfile }
+          if (emailOrUser && !user.email) user.email = emailOrUser
         } else {
+          const isEmail = identifier.includes('@')
           user = {
             id: Date.now(),
-            fullName: formatNameFromIdentifier(emailOrUser),
-            email: emailOrUser || 'user@example.com',
-            mobile: '',
+            fullName: formatNameFromIdentifier(identifier),
+            email: isEmail ? identifier : `${identifier}@example.com`,
+            mobile: !isEmail && /^\+?[0-9]{10,13}$/.test(identifier) ? identifier : '',
             monthlyIncome: 75000,
             currency: 'INR (₹)',
             riskPreference: 'Moderate',
@@ -97,9 +113,9 @@ export const authService = {
           fullName: userData.full_name || userData.fullName || formatNameFromIdentifier(userData.email),
           email: (userData.email || '').toLowerCase(),
           mobile: userData.mobile || '',
-          monthlyIncome: Number(userData.monthly_income || 75000),
+          monthlyIncome: Number(userData.monthly_income || userData.monthlyIncome || 75000),
           currency: userData.currency || 'INR (₹)',
-          riskPreference: userData.risk_preference || 'Moderate',
+          riskPreference: userData.risk_preference || userData.riskPreference || 'Moderate',
           occupation: '',
           location: '',
           avatar: null,
