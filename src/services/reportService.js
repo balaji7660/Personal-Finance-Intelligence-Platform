@@ -1,61 +1,79 @@
 import apiClient from './api'
+import { expenseService } from './expenseService'
+import { budgetService } from './budgetService'
+import { investmentService } from './investmentService'
+import { goalService } from './goalService'
 import { analyticsData } from '../data/mockData'
 
 export const reportService = {
-  getFinancialReport: async () => {
-    try {
-      const res = await apiClient.get('/reports/financial')
-      if (res.data && res.data.data) {
-        return res.data.data
-      }
-    } catch (err) {
-      console.warn('Backend API unavailable, compiling client report:', err.message)
-    }
+  getFinancialSummary: async (timeframe = 'monthly') => {
+    // Backend: const res = await apiClient.get(`/reports/financial?timeframe=${timeframe}`); return res.data;
+    const expenses = await expenseService.getExpenses()
+    const budgets = await budgetService.getBudgets()
+    const investments = await investmentService.getInvestments()
+    const goals = await goalService.getGoals()
+
+    const totalIncome = 75000
+    const totalExpenses = expenses.reduce((acc, curr) => acc + Number(curr.amount || 0), 0)
+    const totalInvested = investments.reduce((acc, curr) => acc + Number(curr.investedAmount || 0), 0)
+    const currentInvestmentValue = investments.reduce((acc, curr) => acc + Number(curr.currentValue || 0), 0)
+    const totalSavings = Math.max(0, totalIncome - totalExpenses)
+    const netWorth = currentInvestmentValue + totalSavings + 150000 // bank balance
 
     return {
-      reportType: 'Financial Statement Summary',
-      period: 'August 2026',
-      totalIncome: 75000,
-      totalExpenses: 42500,
-      totalSavings: 32500,
-      netWorth: 277500,
-      totalInvested: 315000,
-      currentPortfolioValue: 374000,
-      totalReturns: 59000,
-      portfolioReturnPercentage: 18.7,
-      totalGoals: 5,
-      completedGoals: 1,
-      activeGoals: 4
+      totalIncome,
+      totalExpenses,
+      totalSavings,
+      totalInvested,
+      currentInvestmentValue,
+      netWorth,
+      monthlyTrends: analyticsData.monthlyComparison,
+      categoryDistribution: analyticsData.categorySpending,
     }
   },
 
-  getExpenseReport: async () => {
+  getExpenseReport: async (filter = {}) => {
+    const expenses = await expenseService.getExpenses()
     return {
-      categorySpending: analyticsData.categorySpending,
-      highestCategory: 'Food',
-      highestCategoryAmount: 9850,
-      averageDaily: 1416
+      expenses,
+      total: expenses.reduce((acc, curr) => acc + Number(curr.amount), 0),
+      count: expenses.length,
+      categorySummary: analyticsData.categorySpending,
     }
   },
 
   getInvestmentReport: async () => {
+    const investments = await investmentService.getInvestments()
+    const totalInvested = investments.reduce((acc, curr) => acc + Number(curr.investedAmount), 0)
+    const totalCurrent = investments.reduce((acc, curr) => acc + Number(curr.currentValue), 0)
+    const totalReturns = totalCurrent - totalInvested
+    const returnPercentage = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0
+
     return {
-      totalInvested: 315000,
-      currentValue: 374000,
-      returns: 59000,
-      returnPercentage: 18.7,
-      bestAsset: 'Parag Parikh Flexi Cap Fund (+29.0%)'
+      investments,
+      totalInvested,
+      totalCurrent,
+      totalReturns,
+      returnPercentage,
     }
   },
 
   getGoalReport: async () => {
+    const goals = await goalService.getGoals()
+    const totalTarget = goals.reduce((acc, curr) => acc + Number(curr.targetAmount), 0)
+    const totalSaved = goals.reduce((acc, curr) => acc + Number(curr.savedAmount), 0)
+    const completedGoals = goals.filter((g) => g.savedAmount >= g.targetAmount).length
+
     return {
-      totalGoals: 5,
-      completed: 1,
-      inProgress: 4,
-      overallProgressPercentage: 62.4
+      goals,
+      totalGoals: goals.length,
+      completedGoals,
+      activeGoals: goals.length - completedGoals,
+      totalTarget,
+      totalSaved,
+      overallProgress: totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0,
     }
-  }
+  },
 }
 
 export default reportService

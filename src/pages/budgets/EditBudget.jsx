@@ -19,7 +19,7 @@ export const EditBudget = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
-    const found = budgets.find((b) => String(b.id) === String(id))
+    const found = budgets.find((b) => b.id === id)
     if (found) {
       setFormData(found)
     }

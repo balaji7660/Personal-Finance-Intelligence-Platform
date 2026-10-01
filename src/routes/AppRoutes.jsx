@@ -16,6 +16,9 @@ import VerifyOTP from '../pages/auth/VerifyOTP'
 // Dashboard
 import Dashboard from '../pages/dashboard/Dashboard'
 
+// AI Copilot / Assistant
+import AiAssistant from '../pages/ai/AiAssistant'
+
 // Expenses
 import Expenses from '../pages/expenses/Expenses'
 import AddExpense from '../pages/expenses/AddExpense'
@@ -93,6 +96,7 @@ export const AppRoutes = () => {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/ai-assistant" element={<AiAssistant />} />
 
         {/* Expenses Routes */}
         <Route path="/expenses" element={<Expenses />} />

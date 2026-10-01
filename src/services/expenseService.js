@@ -1,4 +1,5 @@
 import apiClient from './api'
+import { initialExpenses } from '../data/mockData'
 
 const STORAGE_KEY = 'finsight_expenses'
 
@@ -8,10 +9,11 @@ const getStoredExpenses = () => {
     try {
       return JSON.parse(data)
     } catch {
-      return []
+      return initialExpenses
     }
   }
-  return []
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(initialExpenses))
+  return initialExpenses
 }
 
 const saveStoredExpenses = (expenses) => {
@@ -20,55 +22,20 @@ const saveStoredExpenses = (expenses) => {
 
 export const expenseService = {
   getExpenses: async () => {
-    try {
-      const res = await apiClient.get('/expenses')
-      if (res.data && res.data.data) {
-        saveStoredExpenses(res.data.data)
-        return res.data.data
-      }
-    } catch (err) {
-      console.warn('Backend API unavailable, using local data for expenses:', err.message)
-    }
+    // Backend: const res = await apiClient.get('/expenses'); return res.data;
     return getStoredExpenses()
   },
 
   getExpenseById: async (id) => {
-    try {
-      const res = await apiClient.get(`/expenses/${id}`)
-      if (res.data && res.data.data) {
-        return res.data.data
-      }
-    } catch (err) {
-      console.warn('Backend API unavailable, using local lookup:', err.message)
-    }
+    // Backend: const res = await apiClient.get(`/expenses/${id}`); return res.data;
     const expenses = getStoredExpenses()
-    const found = expenses.find((e) => String(e.id) === String(id))
+    const found = expenses.find((e) => e.id === id)
     if (!found) throw new Error('Expense not found')
     return found
   },
 
   createExpense: async (expenseData) => {
-    try {
-      const payload = {
-        amount: Number(expenseData.amount),
-        date: expenseData.date,
-        category: expenseData.category,
-        paymentMethod: expenseData.paymentMethod,
-        description: expenseData.description,
-        notes: expenseData.notes || '',
-        status: expenseData.status || 'Completed'
-      }
-      const res = await apiClient.post('/expenses', payload)
-      if (res.data && res.data.data) {
-        const created = res.data.data
-        const expenses = getStoredExpenses()
-        saveStoredExpenses([created, ...expenses])
-        return created
-      }
-    } catch (err) {
-      console.warn('Backend API unavailable, saving expense locally:', err.message)
-    }
-
+    // Backend: const res = await apiClient.post('/expenses', expenseData); return res.data;
     const expenses = getStoredExpenses()
     const newExpense = {
       ...expenseData,
@@ -82,33 +49,9 @@ export const expenseService = {
   },
 
   updateExpense: async (id, updatedData) => {
-    try {
-      const payload = {
-        amount: Number(updatedData.amount),
-        date: updatedData.date,
-        category: updatedData.category,
-        paymentMethod: updatedData.paymentMethod,
-        description: updatedData.description,
-        notes: updatedData.notes || '',
-        status: updatedData.status || 'Completed'
-      }
-      const res = await apiClient.put(`/expenses/${id}`, payload)
-      if (res.data && res.data.data) {
-        const updatedItem = res.data.data
-        const expenses = getStoredExpenses()
-        const index = expenses.findIndex((e) => String(e.id) === String(id))
-        if (index !== -1) {
-          expenses[index] = updatedItem
-          saveStoredExpenses(expenses)
-        }
-        return updatedItem
-      }
-    } catch (err) {
-      console.warn('Backend API unavailable, updating expense locally:', err.message)
-    }
-
+    // Backend: const res = await apiClient.put(`/expenses/${id}`, updatedData); return res.data;
     const expenses = getStoredExpenses()
-    const index = expenses.findIndex((e) => String(e.id) === String(id))
+    const index = expenses.findIndex((e) => e.id === id)
     if (index === -1) throw new Error('Expense not found')
     const updatedExpense = {
       ...expenses[index],
@@ -121,13 +64,9 @@ export const expenseService = {
   },
 
   deleteExpense: async (id) => {
-    try {
-      await apiClient.delete(`/expenses/${id}`)
-    } catch (err) {
-      console.warn('Backend API unavailable, deleting expense locally:', err.message)
-    }
+    // Backend: const res = await apiClient.delete(`/expenses/${id}`); return res.data;
     const expenses = getStoredExpenses()
-    const filtered = expenses.filter((e) => String(e.id) !== String(id))
+    const filtered = expenses.filter((e) => e.id !== id)
     saveStoredExpenses(filtered)
     return { success: true, id }
   },

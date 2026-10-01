@@ -27,7 +27,7 @@ export const InvestmentDetails = () => {
   const navigate = useNavigate()
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const investment = investments.find((i) => String(i.id) === String(id))
+  const investment = investments.find((i) => i.id === id)
 
   if (!investment) {
     return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   User,
@@ -15,8 +15,10 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { formatCurrency } from '../../utils/currencyFormatter'
+import { formatDate } from '../../utils/dateUtils'
 import PageHeader from '../../components/common/PageHeader'
 import DashboardCard from '../../components/cards/DashboardCard'
+import StatCard from '../../components/cards/StatCard'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
 import Select from '../../components/common/Select'
@@ -27,31 +29,15 @@ export const Profile = () => {
 
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    mobile: '',
-    monthlyIncome: 75000,
-    currency: 'INR (₹)',
-    riskPreference: 'Moderate',
-    occupation: '',
-    location: '',
+    name: user?.name || user?.username || '',
+    email: user?.email || '',
+    mobile: user?.mobile || '',
+    monthlyIncome: user?.monthlyIncome || 75000,
+    currency: user?.currency || 'INR (₹)',
+    riskPreference: user?.riskPreference || 'Moderate',
+    occupation: user?.occupation || '',
+    location: user?.location || '',
   })
-
-  // Synchronize form data whenever user state updates
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        fullName: user.fullName || user.name || (user.email ? user.email.split('@')[0] : 'User'),
-        email: user.email || '',
-        mobile: user.mobile || '',
-        monthlyIncome: user.monthlyIncome || 75000,
-        currency: user.currency || 'INR (₹)',
-        riskPreference: user.riskPreference || 'Moderate',
-        occupation: user.occupation || '',
-        location: user.location || '',
-      })
-    }
-  }, [user])
 
   const [savedSuccess, setSavedSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -72,8 +58,6 @@ export const Profile = () => {
       setLoading(false)
     }
   }
-
-  const displayName = formData.fullName || user?.fullName || user?.name || user?.email?.split('@')[0] || 'User'
 
   return (
     <div className="space-y-6">
@@ -145,12 +129,10 @@ export const Profile = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                {displayName}
+                {user?.name || user?.username || 'User'}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {formData.occupation
-                  ? `${formData.occupation}${formData.location ? ` • ${formData.location}` : ''}`
-                  : formData.location || formData.email || 'FinSight Member'}
+                {formData.occupation} • {formData.location}
               </p>
             </div>
             <span className="inline-flex items-center self-center sm:self-start px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
@@ -175,11 +157,7 @@ export const Profile = () => {
             </div>
             <div>
               <span className="text-slate-400">Joined</span>
-              <p className="font-bold text-slate-900 dark:text-white mt-0.5">
-                {user?.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-                  : 'Active'}
-              </p>
+              <p className="font-bold text-slate-900 dark:text-white mt-0.5">Jan 2025</p>
             </div>
           </div>
         </div>
@@ -191,8 +169,8 @@ export const Profile = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Full Name"
-              value={formData.fullName}
-              onChange={(e) => handleChange('fullName', e.target.value)}
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
               disabled={!isEditing}
               icon={User}
               required
@@ -215,7 +193,6 @@ export const Profile = () => {
               onChange={(e) => handleChange('mobile', e.target.value)}
               disabled={!isEditing}
               icon={Phone}
-              placeholder="+91 98765 43210"
             />
             <Input
               label="Monthly Income in INR (₹)"
@@ -260,7 +237,6 @@ export const Profile = () => {
               onChange={(e) => handleChange('occupation', e.target.value)}
               disabled={!isEditing}
               icon={Briefcase}
-              placeholder="e.g. Software Engineer, Financial Analyst"
             />
             <Input
               label="City & Country"
@@ -268,7 +244,6 @@ export const Profile = () => {
               onChange={(e) => handleChange('location', e.target.value)}
               disabled={!isEditing}
               icon={MapPin}
-              placeholder="e.g. Bangalore, India"
             />
           </div>
 

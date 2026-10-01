@@ -16,6 +16,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useFinance } from '../../hooks/useFinance'
 import { formatCurrency } from '../../utils/currencyFormatter'
 import { getGreeting } from '../../utils/dateUtils'
+import { analyticsData } from '../../data/mockData'
 
 import StatCard from '../../components/cards/StatCard'
 import DashboardCard from '../../components/cards/DashboardCard'
@@ -45,55 +46,6 @@ export const Dashboard = () => {
     addGoal,
   } = useFinance()
   const navigate = useNavigate()
-
-  // Compute Income vs Expenses chart data from real expenses (last 6 months)
-  const monthlyComparison = React.useMemo(() => {
-    const now = new Date()
-    const months = []
-    const userIncome = user?.monthlyIncome ? Number(user.monthlyIncome) : 75000
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      months.push({
-        month: d.toLocaleString('default', { month: 'short' }),
-        year: d.getFullYear(),
-        monthNum: d.getMonth(),
-        income: userIncome,
-        expenses: 0,
-        savings: 0,
-      })
-    }
-    expenses.forEach((e) => {
-      const d = new Date(e.date)
-      const entry = months.find(
-        (m) => m.monthNum === d.getMonth() && m.year === d.getFullYear()
-      )
-      if (entry) entry.expenses += Number(e.amount || 0)
-    })
-    months.forEach((m) => { m.savings = Math.max(0, m.income - m.expenses) })
-    return months
-  }, [expenses, user?.monthlyIncome])
-
-  // Compute category breakdown from real expenses
-  const CATEGORY_COLORS = {
-    Food: '#f97316', Travel: '#06b6d4', Shopping: '#ec4899',
-    Bills: '#eab308', Education: '#8b5cf6', Healthcare: '#10b981',
-    Entertainment: '#6366f1', Other: '#64748b',
-  }
-  const categorySpending = React.useMemo(() => {
-    const map = {}
-    expenses.forEach((e) => {
-      const cat = e.category || 'Other'
-      map[cat] = (map[cat] || 0) + Number(e.amount || 0)
-    })
-    return Object.entries(map).map(([name, value]) => ({
-      name, value, color: CATEGORY_COLORS[name] || '#64748b',
-    }))
-  }, [expenses])
-
-  // Live savings rate
-  const savingsRate = metrics.totalIncome > 0
-    ? ((metrics.totalSavings / metrics.totalIncome) * 100).toFixed(1)
-    : '0.0'
 
   // Quick Action Modal states
   const [activeModal, setActiveModal] = useState(null)
@@ -190,8 +142,7 @@ export const Dashboard = () => {
   }
 
   const greeting = getGreeting()
-  const nameToSplit = user?.fullName || user?.name
-  const userName = nameToSplit ? nameToSplit.split(' ')[0] : 'User'
+  const userName = user?.name ? user.name.split(' ')[0] : (user?.username || 'User')
 
   return (
     <div className="space-y-6">
@@ -205,7 +156,7 @@ export const Dashboard = () => {
             {greeting}, {userName} 👋
           </h1>
           <p className="text-sm text-slate-300 mt-1 max-w-xl">
-            Here's your comprehensive financial overview for this month. You're saving {savingsRate}% of your income.
+            Here's your comprehensive financial overview for this month. You're saving 43.3% of your income.
           </p>
         </div>
 
@@ -325,7 +276,7 @@ export const Dashboard = () => {
               </button>
             }
           >
-            <IncomeExpenseChart data={monthlyComparison} height={300} />
+            <IncomeExpenseChart data={analyticsData.monthlyComparison} height={300} />
           </DashboardCard>
         </div>
 
@@ -343,7 +294,7 @@ export const Dashboard = () => {
               </button>
             }
           >
-            <CategoryPieChart data={categorySpending} height={300} />
+            <CategoryPieChart data={analyticsData.categorySpending} height={300} />
           </DashboardCard>
         </div>
       </div>
@@ -382,7 +333,7 @@ export const Dashboard = () => {
               </button>
             }
           >
-            <HealthScoreGauge score={metrics.healthScore ?? 0} />
+            <HealthScoreGauge score={78} />
           </DashboardCard>
         </div>
       </div>

@@ -19,7 +19,7 @@ export const EditExpense = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
-    const found = expenses.find((e) => String(e.id) === String(id))
+    const found = expenses.find((e) => e.id === id)
     if (found) {
       setFormData(found)
     }
